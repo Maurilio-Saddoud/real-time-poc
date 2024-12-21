@@ -1,45 +1,20 @@
-async function init() {
-  // Get an ephemeral key from your server
-  const tokenResponse = await fetch("/session");
+async function setupAssistant(name, tokenUrl, audioElement) {
+  const tokenResponse = await fetch(tokenUrl);
   const data = await tokenResponse.json();
   const EPHEMERAL_KEY = data.client_secret.value;
 
-  // Create a peer connection
-  const pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  });
 
-  // Set up to play remote audio from the model
-  const audioEl = document.createElement("audio");
-  audioEl.autoplay = true;
-  pc.ontrack = (e) => {
-    audioEl.srcObject = e.streams[0];
-
-    // Start audio analysis for image scaling
-    const audioStream = e.streams[0];
-    startImageScaling(audioStream);
+  pc.ontrack = (event) => {
+    console.log(`${name} received track:`, event.streams[0]);
+    audioElement.srcObject = event.streams[0];
+    audioElement.play().catch((error) => console.error(`${name} failed to play:`, error));
   };
 
-  // Add local audio track for microphone input in the browser
-  const ms = await navigator.mediaDevices.getUserMedia({
-    audio: true,
-  });
-  pc.addTrack(ms.getTracks()[0]);
-
-  // Set up data channel for sending and receiving events
-  const dc = pc.createDataChannel("oai-events");
-  dc.addEventListener("message", (e) => {
-    console.log(e); // Realtime server events appear here!
-  });
-
-  // Start the session using the Session Description Protocol (SDP)
-  const offer = await pc.createOffer();
+  const offer = await pc.createOffer({ offerToReceiveAudio: true });
   await pc.setLocalDescription(offer);
-
-  // Add a new instruction before creating the offer
-  const newInstruction =
-    "You are a motivational coach. Respond with encouragement.";
-
-  // Pass the instruction as part of your initial setup
-  const messages = [{ role: "system", content: newInstruction }];
 
   const baseUrl = "https://api.openai.com/v1/realtime";
   const model = "gpt-4o-mini-realtime-preview-2024-12-17";
@@ -52,50 +27,35 @@ async function init() {
     },
   });
 
-  const answer = {
-    type: "answer",
-    sdp: await sdpResponse.text(),
-  };
+  const answer = { type: "answer", sdp: await sdpResponse.text() };
   await pc.setRemoteDescription(answer);
+  return { pc, audioElement };
 }
 
-// Function to start scaling the image based on audio
-function startImageScaling(audioStream) {
-  // Set up audio context and analyzer
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const source = audioContext.createMediaStreamSource(audioStream);
-  const analyser = audioContext.createAnalyser();
-  analyser.fftSize = 256;
+async function connectAssistants() {
+  const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  console.log("Microphone Tracks:", micStream.getTracks());
 
-  const dataArray = new Uint8Array(analyser.frequencyBinCount);
-  source.connect(analyser);
+  const assistant1Audio = document.getElementById("assistant1-audio");
+  const assistant2Audio = document.getElementById("assistant2-audio");
 
-  // Target image element for scaling
-  const imageElement = document.getElementById("animated-image");
+  const assistant1 = await setupAssistant("Assistant 1", "/session", assistant1Audio);
+  const assistant2 = await setupAssistant("Assistant 2", "/session", assistant2Audio);
 
-  // Animation loop
-  function scaleImage() {
-    analyser.getByteFrequencyData(dataArray);
+  micStream.getTracks().forEach((track) => {
+    assistant1.pc.addTrack(track, micStream);
+    assistant2.pc.addTrack(track, micStream);
+    console.log("Added microphone track to assistants:", track);
+  });
 
-    // Calculate the average frequency
-    const avgFrequency =
-      dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+  const stream1 = assistant1.audioElement.captureStream();
+  stream1.getTracks().forEach((track) => assistant2.pc.addTrack(track, stream1));
+  console.log("Assistant 1 audio routed to Assistant 2:", stream1);
 
-    // Map the frequency range (0–255) to a scaling factor (1–3)
-    const scaleFactor = 1 + (avgFrequency / 255) * 2;
-
-    // Log scaling factor for debugging
-    console.log(`Scale Factor: ${scaleFactor}`);
-
-    // Update the image's transform property
-    imageElement.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
-
-    // Repeat animation
-    requestAnimationFrame(scaleImage);
-  }
-
-  // Start the scaling loop
-  scaleImage();
+  const stream2 = assistant2.audioElement.captureStream();
+  stream2.getTracks().forEach((track) => assistant1.pc.addTrack(track, stream2));
+  console.log("Assistant 2 audio routed to Assistant 1:", stream2);
 }
 
-init();
+
+document.getElementById("start-communication").addEventListener("click", connectAssistants);
