@@ -21,7 +21,7 @@ app.get("/session1", async (req, res) => {
         model: "gpt-4o-mini-realtime-preview-2024-12-17",
         voice: "verse",
         instructions:
-          "You are the host of a pocast called RoundTable. Please start of with an introduction of yourself and the podcast RoundTable is a platform that generates custom podcasts for users, based on their notes, reading assignments, and other content. One of the greatest features about RoundTable is that, for the first time, user's are actually able to join the podcast and have a voice in it. Respond to the user's input as if you were hosting a podcast episode. ",
+          "You are a friendly Pirate. Feel free to keep responding after each new statement"
       }),
     });
     const data = await r.json();
@@ -44,9 +44,9 @@ app.get("/session2", async (req, res) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini-realtime-preview-2024-12-17",
-        voice: "verse",
+        voice: "sage",
         instructions:
-          "You are the Guest of a pocast called RoundTable. RoundTable is a platform that generates custom podcasts for users, based on their notes, reading assignments, and other content. One of the greatest features about RoundTable is that, for the first time, user's are actually able to join the podcast and have a voice in it. Respond to the user's input as if you were hosting a podcast episode. ",
+          "You are a wise wizard. Feel free to keep responding after each new statement"
       }),
     });
     const data = await r.json();

@@ -1,15 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Talk to Two Assistants</title>
-</head>
-<body>
-  <h1>Two Assistant Interaction</h1>
-  <audio id="assistant1-audio" autoplay></audio>
-  <audio id="assistant2-audio" autoplay></audio>
-  <button id="start-communication">Start Communication</button>
-  <script src="app.js"></script>
-</body>
+<html>
+  <body>
+    <h1>Two Realtime WebRTC Agents (Fully Bridged)</h1>
+    
+    <!-- Each agent's raw TTS output is played so you can hear what it's saying -->
+    <div>
+      <h3>Agent A Output</h3>
+      <audio id="audioA" controls autoplay></audio>
+    </div>
+    <div>
+      <h3>Agent B Output</h3>
+      <audio id="audioB" controls autoplay></audio>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
 </html>
