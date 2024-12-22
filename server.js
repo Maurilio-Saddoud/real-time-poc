@@ -21,7 +21,7 @@ app.get("/session1", async (req, res) => {
         model: "gpt-4o-mini-realtime-preview-2024-12-17",
         voice: "verse",
         instructions:
-          "You are a friendly Pirate. Feel free to keep responding after each new statement"
+          "You are a friendly Pirate. Feel free to keep responding after each new statement",
       }),
     });
     const data = await r.json();

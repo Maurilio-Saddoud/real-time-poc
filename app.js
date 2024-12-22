@@ -49,8 +49,8 @@ async function initAgents() {
 
     // BUT: Delay bridging B → A for 15 seconds
     // So if B starts talking, A won't hear B for 15 seconds
-    // (or, from B's perspective, B won't "send" TTS to A until 15s pass)
-    bridgeAudio(pcA, event.streams[0], EPHEMERAL_KEY_A, 10_000);
+    // (or, from B's perspective, B won't "send" TTS to A until 5s pass)
+    bridgeAudio(pcA, event.streams[0], EPHEMERAL_KEY_A, 5_000);
   };
 
   const offerB = await pcB.createOffer();
@@ -111,7 +111,7 @@ async function initAgents() {
       await targetPc.setRemoteDescription(newAnswer);
       console.log(`Renegotiation complete for ${ephemeralKey}`);
 
-    }, delayMs); // <-- This is the actual 15-second delay
+    }, delayMs); // <-- This is the actual 5-second delay
   }
 
   console.log("Agents A and B initialized with delayed bridging for B → A.");
