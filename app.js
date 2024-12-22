@@ -39,8 +39,8 @@ async function connectAssistants() {
   const assistant1Audio = document.getElementById("assistant1-audio");
   const assistant2Audio = document.getElementById("assistant2-audio");
 
-  const assistant1 = await setupAssistant("Assistant 1", "/session", assistant1Audio);
-  const assistant2 = await setupAssistant("Assistant 2", "/session", assistant2Audio);
+  const assistant1 = await setupAssistant("Assistant 1", "/session1", assistant1Audio);
+  const assistant2 = await setupAssistant("Assistant 2", "/session2", assistant2Audio);
 
   micStream.getTracks().forEach((track) => {
     assistant1.pc.addTrack(track, micStream);
